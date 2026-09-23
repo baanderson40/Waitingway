@@ -1,0 +1,12 @@
+{
+  "Author": "baanderson40",
+  "Name": "Waitingway",
+  "Punchline": "Because something is always almost ready.",
+  "Description": "Tracks useful FFXIV timers and displays them in the server info bar. Supports Ocean Fishing, AutoRetainer deployables, and retainer ventures.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "timer",
+    "ocean fishing",
+    "utility"
+  ]
+}
