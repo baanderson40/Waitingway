@@ -11,5 +11,11 @@
         <Compile Include="..\Waitingway\Timers\OceanFishingSchedule.cs" Link="Timers\OceanFishingSchedule.cs" />
         <Compile Include="..\Waitingway\Timers\DeployableTracking.cs" Link="Timers\DeployableTracking.cs" />
         <Compile Include="..\Waitingway\Timers\RetainerTracking.cs" Link="Timers\RetainerTracking.cs" />
+        <Compile Include="..\Waitingway\Timers\CustomTimerData.cs" Link="Timers\CustomTimerData.cs" />
+        <Compile Include="..\Waitingway\Timers\CustomTimerSchedule.cs" Link="Timers\CustomTimerSchedule.cs" />
+        <Compile Include="..\Waitingway\Timers\IWaitingwayTimer.cs" Link="Timers\IWaitingwayTimer.cs" />
+        <Compile Include="..\Waitingway\Timers\CustomTimer.cs" Link="Timers\CustomTimer.cs" />
+        <Compile Include="..\Waitingway\Timers\CustomTimerTime.cs" Link="Timers\CustomTimerTime.cs" />
+        <Compile Include="..\Waitingway\Timers\CustomTimerNotificationTracker.cs" Link="Timers\CustomTimerNotificationTracker.cs" />
     </ItemGroup>
 </Project>

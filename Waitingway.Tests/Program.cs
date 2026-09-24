@@ -31,6 +31,13 @@ var tests = new (string Name, Action Test)[]
     ("aggregates ready retainer ventures", TestRetainerAggregation),
     ("ignores invalid retainer ventures", TestInvalidRetainers),
     ("orders pending retainer ventures", TestRetainerOrdering),
+    ("shows Eorzea timer at target", TestEorzeaTarget),
+    ("uses Eorzea day length", TestEorzeaDayLength),
+    ("shows local timer next occurrence", TestLocalTimer),
+    ("prioritizes custom timer now state", TestCustomTimerPriority),
+    ("parses short custom time", TestCustomTimerTimeParsing),
+    ("rejects invalid custom time", TestInvalidCustomTimerTime),
+    ("notifies custom timer once", TestCustomTimerNotification),
 };
 
 foreach (var (name, test) in tests)
@@ -130,4 +137,107 @@ static void TestRetainerOrdering()
 
     AssertEqual("Soon", state.NextReturn!.Value.Name);
     AssertEqual("00:01", RetainerTracker.FormatRemaining(state.NextReturn.Value.VentureEndsAtUnixSeconds, now, false));
+}
+
+static void TestEorzeaTarget()
+{
+    var timer = new CustomTimerDefinition
+    {
+        ClockType = CustomTimerClockType.Eorzea,
+        Hour = 0,
+        Minute = 0,
+    };
+
+    var state = CustomTimerSchedule.GetState(timer, DateTimeOffset.UnixEpoch);
+    AssertEqual(true, state.IsNow);
+    AssertEqual(TimeSpan.Zero, state.Remaining);
+}
+
+static void TestEorzeaDayLength()
+{
+    var timer = new CustomTimerDefinition
+    {
+        ClockType = CustomTimerClockType.Eorzea,
+        Hour = 0,
+        Minute = 0,
+    };
+
+    var state = CustomTimerSchedule.GetState(timer, DateTimeOffset.UnixEpoch.AddMinutes(1));
+    AssertEqual(false, state.IsNow);
+    AssertEqual(TimeSpan.FromMinutes(69), state.Remaining);
+}
+
+static void TestLocalTimer()
+{
+    var now = DateTimeOffset.UtcNow;
+    var target = now.ToLocalTime().AddMinutes(2);
+    var timer = new CustomTimerDefinition
+    {
+        ClockType = CustomTimerClockType.Local,
+        Hour = target.Hour,
+        Minute = target.Minute,
+    };
+
+    var state = CustomTimerSchedule.GetState(timer, now);
+    AssertEqual(false, state.IsNow);
+    AssertEqual(target.Hour, state.NextOccurrence.ToLocalTime().Hour);
+    AssertEqual(target.Minute, state.NextOccurrence.ToLocalTime().Minute);
+}
+
+static void TestCustomTimerPriority()
+{
+    var customTimer = new CustomTimer();
+    customTimer.SetTimers(
+    [
+        new() { Name = "Now Timer", ClockType = CustomTimerClockType.Eorzea, Hour = 0, Minute = 0 },
+        new() { Name = "Later Timer", ClockType = CustomTimerClockType.Eorzea, Hour = 1, Minute = 0 },
+    ]);
+
+    AssertEqual("Now Timer: Now", customTimer.GetDisplayText(DateTime.UnixEpoch, false));
+}
+
+static void TestCustomTimerTimeParsing()
+{
+    if (!CustomTimerTime.TryParse("9:05", out var hour, out var minute))
+        throw new InvalidOperationException("Expected time to parse.");
+
+    AssertEqual(9, hour);
+    AssertEqual(5, minute);
+    AssertEqual("09:05", CustomTimerTime.Format(hour, minute));
+
+    if (!CustomTimerTime.TryParse("23:59", out hour, out minute))
+        throw new InvalidOperationException("Expected two-digit hour to parse.");
+
+    AssertEqual(23, hour);
+    AssertEqual(59, minute);
+}
+
+static void TestInvalidCustomTimerTime()
+{
+    if (CustomTimerTime.TryParse("24:00", out _, out _))
+        throw new InvalidOperationException("Expected invalid time to be rejected.");
+
+    if (CustomTimerTime.TryParse("12", out _, out _))
+        throw new InvalidOperationException("Expected incomplete time to be rejected.");
+
+    if (CustomTimerTime.TryParse("1:5", out _, out _))
+        throw new InvalidOperationException("Expected one-digit minute to be rejected.");
+}
+
+static void TestCustomTimerNotification()
+{
+    var timer = new CustomTimerDefinition
+    {
+        Name = "Test Timer",
+        ClockType = CustomTimerClockType.Eorzea,
+        Hour = 1,
+        Minute = 0,
+    };
+    var tracker = new CustomTimerNotificationTracker();
+    var before = DateTimeOffset.UnixEpoch.AddMinutes(2);
+    var atTarget = DateTimeOffset.UnixEpoch.AddMinutes(3);
+
+    AssertEqual(0, tracker.Check([timer], before).Count);
+    AssertEqual(1, tracker.Check([timer], atTarget).Count);
+    AssertEqual(0, tracker.Check([timer], atTarget.AddSeconds(30)).Count);
 }

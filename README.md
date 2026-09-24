@@ -17,6 +17,10 @@ Deployables tracks all AutoRetainer-known airships and submersibles with a retur
 
 Deployables and retainer ventures are read through AutoRetainer's IPC when AutoRetainer is installed and available. Waitingway tracks all airships and submersibles with a recorded return time; idle vessels are ignored. Retainer tracking includes every active venture. Each entry hides when AutoRetainer is unavailable or no matching data exists.
 
+Custom timers are configured in the settings table. They repeat daily using either local computer time or Eorzea time. Eorzea days last 70 real-world minutes. The Custom Timers server-bar entry shows the nearest enabled timer and shows `Now` for one real minute at its target.
+
+Custom timer completion notifications are global settings. Chat messages, Dalamud toast notifications, and the dismissible popup window can each be enabled independently. Notifications are emitted once per timer occurrence.
+
 ## Build
 
 ```text
